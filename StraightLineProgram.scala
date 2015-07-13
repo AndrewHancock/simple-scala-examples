@@ -2,7 +2,7 @@
   * <Stm> ::= <Stm> ";" <Stm> | <id> " := " <Exp> | "print (" <ExpList> ")"
   * <Exp> ::= <id> | <num> | <Exp> <Binop> <Exp> | "(" <Stm> ", " <Exp> ")"
   * <ExpList> ::= <Exp> { ", " <ExpList> }
-  * <Binop> ::= " + "| " - " | " * " | " / "
+  * <Binop> ::= "+"| "-" | "*" | "/"
   **/
   
  abstract class Stm
@@ -27,6 +27,8 @@
  case class Div() extends Binop
  
  object StraightLineProgram {
+ 
+	// Generated strings for code corresponding to AST
 	def stmStr(stm: Stm): String = stm match {
 		case CompoundStm(stm1, stm2) => stmStr(stm1) + " ; " + stmStr(stm2)	
 		case AssignStm(id, exp) => id + " := " + expStr(exp)
@@ -36,7 +38,7 @@
 	def expStr(exp: Exp): String = exp match {		
 		case IdExp(id) => id
 		case NumExp(num) => num.toString()
-		case OpExp(exp1, op, exp2) => expStr(exp1) + " " + opStr(op) + " " + expStr(exp2)
+		case OpExp(exp1, op, exp2) => expStr(exp1) + opStr(op) + expStr(exp2)
 		case EseqExp(stm, exp) => "(" + stmStr(stm) + ", " + expStr(exp) + ")"
 	}
 	
@@ -52,19 +54,51 @@
 		case Div() => "/"		
 	}
 	
+	// Evaluate AST
+	def evalStm(symTable: Map[String,Int], stm: Stm): Map[String,Int] = stm match {
+		case CompoundStm(stm1, stm2) => evalStm(evalStm(symTable, stm1), stm2)
+		case AssignStm(id, exp) => symTable + (id -> evalExp(symTable, exp))
+		case PrintStm(expList) => {println(evalList(symTable, expList)); symTable }
+	}
+	
+	def evalExp(symTable: Map[String,Int], exp: Exp): Int = exp match {		
+		case IdExp(id) => symTable(id)
+		case NumExp(num) => num
+		case OpExp(exp1, op, exp2) => evalOp(evalExp(symTable, exp1), op, evalExp(symTable, exp2))
+		case EseqExp(stm, exp) => { evalStm(symTable, stm);  evalExp(symTable, exp) }
+	}
+	
+	def evalList(symTable: Map[String,Int], expList: ExpList): String = expList match {		
+		case PairExpList(exp, expList) => evalExp(symTable, exp).toString() + " " + evalList(symTable, expList) 
+		case LastExpList(exp) => evalExp(symTable, exp).toString()
+	}
+	
+	def evalOp(x: Int, op: Binop, y: Int): Int = op match {		
+		case Plus() => x + y
+		case Minus() => x - y
+		case Times() => x * y
+		case Div() => x * y	
+	}
+	
 	def main(args: Array[String]) {
+		// Hardcoded AST for the following program:
 		// a := 5+3; b := (print(a, a-1), 10*a); print(b)
-		val prog = CompoundStm(
-			//a := 5+3;
+		val prog = CompoundStm(			
 			AssignStm("a", OpExp(NumExp(5), Plus(), NumExp(3))),
-			CompoundStm(
-				//b := (print(a, a-1), 10*a);
+			CompoundStm(				
 				AssignStm("b", EseqExp(
 					PrintStm(PairExpList(IdExp("a"), 
 						LastExpList(OpExp(IdExp("a"), Minus(), NumExp(1))))),
 					OpExp(NumExp(10), Times(), IdExp("a")))),
 				PrintStm(LastExpList(IdExp("b")))))				
 		
+		// Print out he source code for the program
 		println(stmStr(prog))
+		
+		// Evaluate the program, including side-effects		
+		// Should print:
+		// 8 7
+		// 80
+		evalStm(Map[String, Int](), prog)
 	}
 }

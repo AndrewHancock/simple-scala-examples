@@ -17,8 +17,8 @@ object Functions {
 		println(binOp((x: Int, y: Int) => x * y, 3, 5))
 		
 		val num = 15;
-		
+		val closure =  (x: Int, y: Int) => x * y + num
 		//Anonymous function with closure over num
-		println(binOp((x: Int, y: Int) => x * y + num, 2, 3))		
+		println(binOp(closure, 2, 3))		
 	}
 }

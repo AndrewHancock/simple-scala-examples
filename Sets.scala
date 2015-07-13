@@ -28,14 +28,5 @@ object Sets {
 		// Union
 		println("A | B: " + (setA | setB));
 		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 	}
 }

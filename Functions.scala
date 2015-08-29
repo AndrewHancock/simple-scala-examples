@@ -1,6 +1,6 @@
 
 object Functions {
-	// Note omissiong of brackets, one line definition with =
+	// Note missing of brackets, one line definition with =
 	def add(x : Int, y : Int) = x + y	
 	
 	// Function takes high-order function as param 1

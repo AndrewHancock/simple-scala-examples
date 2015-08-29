@@ -1,3 +1,4 @@
+package lineprogram;
 /** Grammar adapted from Andrew Appel's Modern Compiler implementation..." series.
   * <Stm> ::= <Stm> ";" <Stm> | <id> " := " <Exp> | "print (" <ExpList> ")"
   * <Exp> ::= <id> | <num> | <Exp> <Binop> <Exp> | "(" <Stm> ", " <Exp> ")"
@@ -100,5 +101,8 @@
 		// 8 7
 		// 80
 		evalStm(Map[String, Int](), prog)
+    
+    // print(10)
+    val prog2 = PrintStm(LastExpList(NumExp(10)))
 	}
 }

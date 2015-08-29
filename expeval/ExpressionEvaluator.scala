@@ -1,3 +1,4 @@
+package expeval
 /** Grammar:
   *    Expression :: = Expression + Term | Expression - Term
   *    Term ::= Factor | Term * Factor | Term / Factor
@@ -10,7 +11,7 @@ case class Sub(expression: Expression, term: Term) extends Expression
 
 abstract class Term extends Expression
 case class Mul(term: Term, factor: Factor) extends Term
-case class Div(term: Term, factor: Factor) extends Term
+case class Divide(term: Term, factor: Factor) extends Term
 
 abstract class Factor extends Term
 case class Constant(value: Int) extends Factor
@@ -23,7 +24,7 @@ object ExpressionEvaluator {
 		println(eval(expr))
 		
 		// define AST for: 2 + 3 * 5 - 4 / 2
-		val expr2 = Sub(Add(Constant(2), Mul(Constant(3), Constant(5))), Div(Constant(4), Constant(2)))
+		val expr2 = Sub(Add(Constant(2), Mul(Constant(3), Constant(5))), Divide(Constant(4), Constant(2)))
 		println(eval(expr2))
 	}
 	
@@ -31,7 +32,7 @@ object ExpressionEvaluator {
 		case Add(x, y) => eval(x) + eval(y)		 
 		case Sub(x, y) => eval(x) - eval(y)
 		case Mul(x, y) => eval(x) * eval(y)
-		case Div(x, y) => eval(x) / eval(y)
+		case Divide(x, y) => eval(x) / eval(y)
 		case Constant(value) => value			
 	}
 }

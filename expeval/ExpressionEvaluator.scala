@@ -5,8 +5,8 @@ import scala.io.Source;
 
 /**
  * Grammar:
- *    Expression =  Term | Term "+" Expression | Term "-" Expression
- *    Term = Factor | Factor "*" Term | Factor "/" Term
+ *    Expression =  Term "+" Expression | Term "-" Expression | Term
+ *    Term = Factor "*" Term | Factor "/" Term | Factor
  * 	  Factor = Constant
  * 	  Constant = Int
  */

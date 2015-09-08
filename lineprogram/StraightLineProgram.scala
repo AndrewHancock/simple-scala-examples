@@ -102,7 +102,5 @@ package lineprogram;
 		// 80
 		evalStm(Map[String, Int](), prog)
     
-    // print(10)
-    val prog2 = PrintStm(LastExpList(NumExp(10)))
 	}
 }

@@ -1,58 +1,52 @@
 package expeval
 
 import scala.util.parsing.combinator._;
+import scala.io.Source;
 
 /**
  * Grammar:
- *    Expression :: = Expression + Term | Expression - Term
- *    Term ::= Factor | Term * Factor | Term / Factor
- * 	   Factor :: = Constant
- * 	   Constant :: = Int
+ *    Expression =  Term | Term "+" Expression | Term "-" Expression
+ *    Term = Factor | Factor "*" Term | Factor "/" Term
+ * 	  Factor = Constant
+ * 	  Constant = Int
  */
 abstract class Expression
-case class Add(expression: Expression, term: Term) extends Expression
-case class Sub(expression: Expression, term: Term) extends Expression
+case class Add(term: Term, exp: Expression) extends Expression
+case class Sub(term: Term, exp: Expression) extends Expression
 
 abstract class Term extends Expression
-case class Mul(term: Term, factor: Factor) extends Term
-case class Divide(term: Term, factor: Factor) extends Term
+case class Mul(factor : Factor, term : Term) extends Term
+case class Divide(factor : Factor, term : Term) extends Term
 
 abstract class Factor extends Term
-case class Constant(value: Int) extends Factor
+case class Constant(value: Double) extends Factor
 
 class ExpParser extends JavaTokenParsers {
-  def exp: Parser[List[Expression]] = term ~ rep("+" ~ term | "-" ~ term) ^^ {
-    case term ~ termList =>
-      for (term1 <- term; comb <- termList; term2 <- comb._2) yield comb._1 match {
-        case "+" => Add(term1, term2)
-        case "-" => Sub(term1, term2)
-      }
-  }
-  def term: Parser[List[Term]] = factor ~ rep("*" ~ factor | "/ " ~ factor) ^^ {
-    case factor1 ~ factorList =>
-      if(factorList.isEmpty)
-        List(factor1)
-       else
-        for (comb <- factorList) yield comb._1 match {
-          case "*" => Mul(factor1, comb._2)
-          case "/" => Divide(factor1, comb._2)
-        }
-  }
+  def exp: Parser[Expression] = 
+    (term ~ "+" ~ exp) ^^ { case term ~ "+" ~ exp => Add(term, exp) } |
+    (term ~ "-" ~ exp) ^^ { case term ~ "-" ~ exp => Sub(term, exp) } |
+    term ^^ { case term => term } 
+
+  def term: Parser[Term] = 
+    factor ~ "*" ~ term ^^ { case factor ~ "*" ~ term => Mul(factor, term) } |
+    factor ~ "/" ~ term ^^ { case factor ~ "/" ~ term => Divide(factor, term) } |
+    factor ^^ { case factor => factor } 
+
   def factor: Parser[Factor] = floatingPointNumber ^^ {
-    case factor => Constant(factor.toInt)
+    case factor => Constant(factor.toDouble)
   }
 }
 
 object ExpressionEvaluator extends ExpParser {
-  def main(args: Array[String]) {
-    val input = "2 + 5 * 3 - 7"
-    println("Input: " + input);
-    val expr = parseAll(exp, input)
-    println(expr)
-    println(eval(expr.get.head))    
+  def main(args: Array[String]) {    
+    for (ln <- io.Source.stdin.getLines) {
+      val expr = parseAll(exp, ln)
+      println(expr)
+      println(eval(expr.get))      
+    }
   }
 
-  def eval(expression: Expression): Int = expression match {
+  def eval(expression: Expression): Double = expression match {
     case Add(x, y)       => eval(x) + eval(y)
     case Sub(x, y)       => eval(x) - eval(y)
     case Mul(x, y)       => eval(x) * eval(y)

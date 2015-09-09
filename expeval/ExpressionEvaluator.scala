@@ -23,8 +23,8 @@ case class Constant(value: Double) extends Factor
 
 class ExpParser extends JavaTokenParsers {
   def exp: Parser[Expression] = 
-    (term ~ "+" ~ exp) ^^ { case term ~ "+" ~ exp => Add(term, exp) } |
-    (term ~ "-" ~ exp) ^^ { case term ~ "-" ~ exp => Sub(term, exp) } |
+    term ~ "+" ~ exp ^^ { case term ~ "+" ~ exp => Add(term, exp) } |
+    term ~ "-" ~ exp ^^ { case term ~ "-" ~ exp => Sub(term, exp) } |
     term ^^ { case term => term } 
 
   def term: Parser[Term] = 
@@ -38,19 +38,20 @@ class ExpParser extends JavaTokenParsers {
 }
 
 object ExpressionEvaluator extends ExpParser {
+  
+    def eval(expression: Expression): Double = expression match {
+    case Add(x, y)       => eval(x) + eval(y)
+    case Sub(x, y)       => eval(x) - eval(y)
+    case Mul(x, y)       => eval(x) * eval(y)
+    case Divide(x, y)    => eval(x) / eval(y)
+    case Constant(value) => value
+  }
+    
   def main(args: Array[String]) {    
     for (ln <- io.Source.stdin.getLines) {
       val expr = parseAll(exp, ln)
       println(expr)
       println(eval(expr.get))      
     }
-  }
-
-  def eval(expression: Expression): Double = expression match {
-    case Add(x, y)       => eval(x) + eval(y)
-    case Sub(x, y)       => eval(x) - eval(y)
-    case Mul(x, y)       => eval(x) * eval(y)
-    case Divide(x, y)    => eval(x) / eval(y)
-    case Constant(value) => value
   }
 }
